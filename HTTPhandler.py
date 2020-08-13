@@ -47,9 +47,13 @@ class HTTPhandler:
             self.__send_response(200, HTTPresponse.doc_root(path))
 
 
-    def __send_response(self, code, body, path=None):
-        response = HTTPresponse(code, body, path=path)
-        self.conn.sendall(bytes(response.formatted_response(), 'utf-8'))
+    def __send_response(self, code, body):
+        response = HTTPresponse(code, body)
+        if 'html' in response.body:
+            doctype = 'html'
+        else:
+            doctype = 'plain'
+        self.conn.sendall(bytes(response.formatted_response(doctype), 'utf-8'))
         self.conn.sendall(bytes(response.body, 'utf-8'))
         self.conn.close()
 
@@ -71,18 +75,20 @@ class HTTPresponse:
         self.body = body
         self.path = path
         self.header = header
-    
-    def formatted_response(self):
+
+
+    def formatted_response(self, type):
         response_lines = [f'HTTP/1.1 {self.code} {self.CODE_DESCRIPTION[self.code]}']
         response_lines.append('Server: Xad-server')
         if self.code == 400:
-            response_lines.append(f'Connection: {self.CODE_DESCRIPTION[self.code]}')
-        response_lines.append('Content-Type: text/html; charset=utf-8')
+            response_lines.append(f'Connection: close')
+        response_lines.append(str('Content-Type: text/{}; charset=utf-8').format(type))
         response_lines.append('Content-Length: ' + str(len(self.body)))
         return self.CRLF.join(response_lines) + (self.CRLF * 2)
+
 
     @staticmethod
     def doc_root(path):
         if path is not None and '/':
-            index = open('./docroot/index.html') 
+            index = open('./docroot/index.html')
             return index.read()
