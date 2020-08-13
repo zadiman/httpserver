@@ -82,7 +82,7 @@ class HTTPresponse:
         response_lines.append('Server: Xad-server')
         if self.code == 400:
             response_lines.append(f'Connection: close')
-        response_lines.append(str('Content-Type: text/{}; charset=utf-8').format(type))
+        response_lines.append('Content-Type: text/{}; charset=utf-8'.format(type))
         response_lines.append('Content-Length: ' + str(len(self.body)))
         return self.CRLF.join(response_lines) + (self.CRLF * 2)
 
