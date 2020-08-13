@@ -43,11 +43,12 @@ class HTTPhandler:
         elif http_version != 'HTTP/1.1':
             self.__send_response(400, '400: Only HTTP/1.1 is supported.')
         else:
-            self.__send_response(200, '200: OK')
+            print(HTTPresponse.doc_root(path))
+            self.__send_response(200, HTTPresponse.doc_root(path))
 
 
-    def __send_response(self, code, body):
-        response = HTTPresponse(code, body)
+    def __send_response(self, code, body, path=None):
+        response = HTTPresponse(code, body, path=path)
         self.conn.sendall(bytes(response.formatted_response(), 'utf-8'))
         self.conn.sendall(bytes(response.body, 'utf-8'))
         self.conn.close()
@@ -65,18 +66,23 @@ class HTTPresponse:
         404: 'Not Found'
         }
 
-    def __init__(self, code, body, header=None):
+    def __init__(self, code, body, path=None, header=None):
         self.code = code
-        self.header = header
         self.body = body
-
+        self.path = path
+        self.header = header
     
     def formatted_response(self):
         response_lines = [f'HTTP/1.1 {self.code} {self.CODE_DESCRIPTION[self.code]}']
         response_lines.append('Server: Xad-server')
         if self.code == 400:
             response_lines.append(f'Connection: {self.CODE_DESCRIPTION[self.code]}')
-        response_lines.append('Content-Type: text/plain; charset=utf-8')
+        response_lines.append('Content-Type: text/html; charset=utf-8')
         response_lines.append('Content-Length: ' + str(len(self.body)))
         return self.CRLF.join(response_lines) + (self.CRLF * 2)
 
+    @staticmethod
+    def doc_root(path):
+        if path is not None and '/':
+            index = open('./docroot/index.html') 
+            return index.read()
