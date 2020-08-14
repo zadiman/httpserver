@@ -49,7 +49,7 @@ class HTTPhandler:
 
     def __send_response(self, code, body):
         response = HTTPresponse(code, body)
-        if 'html' in response.body:
+        if '<!DOCTYPE html>' in response.body:
             doctype = 'html'
         else:
             doctype = 'plain'
